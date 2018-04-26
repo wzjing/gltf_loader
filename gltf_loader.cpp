@@ -1,8 +1,15 @@
 #include "gltf_loader.h"
+#include <cstdio>
+#include <cstring>
+#include "lib/cJson/cJSON.h"
 
 #define ELEMENT_SIZE 1
 #define ELEMENT_COUNT 256
 #define BUFFER_SIZE (ELEMENT_COUNT * ELEMENT_SIZE +1)
+
+#ifdef __cplusplus
+extern "C" {
+#endif
 
 void load_file(char **content, const char *filename) {
     FILE *stream;
@@ -67,7 +74,7 @@ GLTF_Array decode_int_array(cJSON *root, const char *name) {
     for (int i = 0; i < arrayLength; ++i) {
         result[i] = cJSON_GetArrayItem(array, i)->valueint;
     }
-    return (GLTF_Array) {result, arrayLength};
+    return {result, arrayLength};
 }
 
 GLTF_Array decode_double_array(cJSON *root, const char *name) {
@@ -81,11 +88,11 @@ GLTF_Array decode_double_array(cJSON *root, const char *name) {
         result[i] = cJSON_GetArrayItem(array, i)->valuedouble;
         printf("double item: %lf\n", cJSON_GetArrayItem(array, i)->valuedouble);
     }
-    return (GLTF_Array) {result, arrayLength};
+    return {result, arrayLength};
 }
 
 GLTF_Pair decode_pair(cJSON *element) {
-    return (GLTF_Pair) {element->string, element->valuestring};
+    return {element->string, element->valuestring};
 }
 
 GLTF_Array decode_pairs(cJSON *root, const char *name) {
@@ -96,10 +103,14 @@ GLTF_Array decode_pairs(cJSON *root, const char *name) {
     memset(result, 0, sizeof(GLTF_Pair) * dictionaryLength);
     for (int i = 0; i < dictionaryLength; ++i) {
         cJSON *pair = cJSON_GetArrayItem(dictionary, i);
-        result[i] = (GLTF_Pair) {pair->string, pair->valuestring};
+        result[i] = {pair->string, pair->valuestring};
     }
-    return (GLTF_Array) {result, dictionaryLength};
+    return {result, dictionaryLength};
 }
+
+#ifdef __cplusplus
+}
+#endif
 
 void load_gltf(GLTF **gltf, const char *json) {
     cJSON *root = cJSON_Parse(json);
@@ -216,7 +227,7 @@ void load_gltf(GLTF **gltf, const char *json) {
     printf("Decode Nodes\n");
     cJSON *nodes = cJSON_GetObjectItem(root, "nodes");
     (*gltf)->nodes_size = cJSON_GetArraySize(nodes);
-    (*gltf)->nodes = new GLTF_Mesh[(*gltf)->nodes_size];
+    (*gltf)->nodes = new GLTF_Node[(*gltf)->nodes_size];
     for (int i = 0; i < (*gltf)->nodes_size; ++i) {
         cJSON *node = cJSON_GetArrayItem(nodes, i);
         (*gltf)->nodes[i].name = decode_string(node, "name");

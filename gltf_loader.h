@@ -5,14 +5,12 @@
 #ifndef LIBUSE_GLSL_LOADER_H
 #define LIBUSE_GLSL_LOADER_H
 
+#include <cstdlib>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#include <cstdio>
-#include <cstdlib>
-#include <cstring>
-#include "lib/cJson/cJSON.h"
 
 typedef struct {
     void *array;
@@ -191,12 +189,10 @@ typedef struct {
 
 void load_gltf(GLTF **gltf, const char *json);
 
-void load_file(char **content, const char *filename);
-
 void load_gltf_file(GLTF **gltf, const char *file);
 
 #ifdef __cplusplus
-};
+}; // extern "C"
 #endif
 
 #endif //LIBUSE_GLSL_LOADER_H
