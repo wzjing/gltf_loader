@@ -3,33 +3,25 @@
 #include <cstring>
 #include "lib/cJson/cJSON.h"
 
-#define ELEMENT_SIZE 1
-#define ELEMENT_COUNT 256
-#define BUFFER_SIZE (ELEMENT_COUNT * ELEMENT_SIZE +1)
+#define BUFFER_SIZE 1024
 
-#ifdef __cplusplus
 extern "C" {
-#endif
 
 void load_file(char **content, const char *filename) {
-    FILE *stream;
-    if (fopen_s(&stream, filename, "r+t") == 0) {
+    FILE *stream = fopen(filename, "r+t");
+    if (stream != nullptr) {
         char buffer[BUFFER_SIZE] = "\0";
         size_t content_size = BUFFER_SIZE;
         *content = new char[content_size];
         memset(*content, 0, 1);
-        while (true) {
+        while (!feof(stream)) {
             // Reset and read
             memset(buffer, 0, BUFFER_SIZE);
-            fread_s(buffer, BUFFER_SIZE, ELEMENT_SIZE, ELEMENT_COUNT, stream);
-
+            fread(buffer, sizeof(char), 1024, stream);
             // Append to result
             *content = static_cast<char *>(realloc(*content, content_size += BUFFER_SIZE));
-            strcat_s(*content, content_size, buffer);
+            strcat(*content, buffer);
             fflush(stream);
-            if (feof(stream) != 0) {
-                break;
-            }
         }
         fclose(stream);
 //        logd("Read: \n--------%10s--------\n%s\n--------    end   --------", filename, *content);
@@ -78,7 +70,7 @@ GLTF_Array decode_int_array(cJSON *root, const char *name) {
 }
 
 GLTF_Array decode_double_array(cJSON *root, const char *name) {
-    printf("decode_double_array(%s)\n", name);
+//    printf("decode_double_array(%s)\n", name);
     double *result;
     cJSON *array = cJSON_GetObjectItem(root, name);
     size_t arrayLength = cJSON_GetArraySize(array);
@@ -86,7 +78,7 @@ GLTF_Array decode_double_array(cJSON *root, const char *name) {
     memset(result, 0, sizeof(double) * arrayLength);
     for (int i = 0; i < arrayLength; ++i) {
         result[i] = cJSON_GetArrayItem(array, i)->valuedouble;
-        printf("double item: %lf\n", cJSON_GetArrayItem(array, i)->valuedouble);
+//        printf("double item: %lf\n", cJSON_GetArrayItem(array, i)->valuedouble);
     }
     return {result, arrayLength};
 }
@@ -108,9 +100,7 @@ GLTF_Array decode_pairs(cJSON *root, const char *name) {
     return {result, dictionaryLength};
 }
 
-#ifdef __cplusplus
 }
-#endif
 
 void load_gltf(GLTF **gltf, const char *json) {
     cJSON *root = cJSON_Parse(json);
@@ -121,7 +111,7 @@ void load_gltf(GLTF **gltf, const char *json) {
 
     *gltf = new GLTF();
 
-    printf("Decode Accessors\n");
+//    printf("Decode Accessors\n");
     // Decode Accessors
     cJSON *accessors = cJSON_GetObjectItem(root, "accessors");
     (*gltf)->accessors_size = cJSON_GetArraySize(accessors);
@@ -143,13 +133,13 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode Asset
-    printf("Decode Asset\n");
+//    printf("Decode Asset\n");
     cJSON *asset = cJSON_GetObjectItem(root, "asset");
     (*gltf)->asset.generator = decode_string(asset, "generator");
     (*gltf)->asset.version = decode_string(asset, "version");
 
     // Decode Buffers
-    printf("Decode Buffers\n");
+//    printf("Decode Buffers\n");
     cJSON *buffers = cJSON_GetObjectItem(root, "buffers");
     (*gltf)->buffers_size = cJSON_GetArraySize(buffers);
     (*gltf)->buffers = new GLTF_Buffer[(*gltf)->buffers_size];
@@ -161,7 +151,7 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode BufferViews
-    printf("Decode BufferViews\n");
+//    printf("Decode BufferViews\n");
     cJSON *bufferViews = cJSON_GetObjectItem(root, "bufferViews");
     (*gltf)->bufferViews_size = cJSON_GetArraySize(bufferViews);
     (*gltf)->bufferViews = new GLTF_BufferView[(*gltf)->bufferViews_size];
@@ -176,7 +166,7 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode Images
-    printf("Decode Images\n");
+//    printf("Decode Images\n");
     cJSON *images = cJSON_GetObjectItem(root, "images");
     (*gltf)->images_size = cJSON_GetArraySize(images);
     (*gltf)->images = new GLTF_Image[(*gltf)->images_size];
@@ -187,7 +177,7 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode Materials
-    printf("Decode Materials\n");
+//    printf("Decode Materials\n");
     cJSON *materials = cJSON_GetObjectItem(root, "materials");
     (*gltf)->materials_size = cJSON_GetArraySize(materials);
     (*gltf)->materials = new GLTF_Material[(*gltf)->materials_size];
@@ -202,7 +192,7 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode Meshes
-    printf("Decode Meshes\n");
+//    printf("Decode Meshes\n");
     cJSON *meshes = cJSON_GetObjectItem(root, "meshes");
     (*gltf)->meshes_size = cJSON_GetArraySize(meshes);
     (*gltf)->meshes = new GLTF_Mesh[(*gltf)->meshes_size];
@@ -224,7 +214,7 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode Nodes
-    printf("Decode Nodes\n");
+//    printf("Decode Nodes\n");
     cJSON *nodes = cJSON_GetObjectItem(root, "nodes");
     (*gltf)->nodes_size = cJSON_GetArraySize(nodes);
     (*gltf)->nodes = new GLTF_Node[(*gltf)->nodes_size];
@@ -235,7 +225,7 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode Samplers
-    printf("Decode Samplers\n");
+//    printf("Decode Samplers\n");
     cJSON *samplers = cJSON_GetObjectItem(root, "samplers");
     (*gltf)->samplers_size = cJSON_GetArraySize(samplers);
     (*gltf)->samplers = new GLTF_Sampler[(*gltf)->samplers_size];
@@ -248,11 +238,11 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode Scene
-    printf("Decode Scene\n");
+//    printf("Decode Scene\n");
     (*gltf)->scene = decode_int(root, "scene");
 
     // Decode Scenes
-    printf("Decode Scenes\n");
+//    printf("Decode Scenes\n");
     cJSON *scenes = cJSON_GetObjectItem(root, "scenes");
     (*gltf)->scenes_size = cJSON_GetArraySize(scenes);
     (*gltf)->scenes = new GLTF_Scene[(*gltf)->scenes_size];
@@ -264,7 +254,7 @@ void load_gltf(GLTF **gltf, const char *json) {
     }
 
     // Decode Textures
-    printf("Decode Textures\n");
+//    printf("Decode Textures\n");
     cJSON *textures = cJSON_GetObjectItem(root, "textures");
     (*gltf)->textures_size = cJSON_GetArraySize(textures);
     (*gltf)->textures = new GLTF_Texture[(*gltf)->scenes_size];

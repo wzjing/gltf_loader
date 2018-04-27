@@ -1,28 +1,37 @@
 #include <iostream>
 #include "gltf_loader.h"
 #include <fstream>
-
-#define BUFFER_SIZE 2
+#include <vector>
 
 using namespace std;
 
-char *loadBintary(const char *filename, long offset, long length) {
-    char *buffer;
-    ifstream file("cube.bin", ios::in | ios::binary | ios::ate);
-    if (file.is_open()) {
-        buffer = new char[length];
-        file.seekg(0, ios::beg);
-        file.read(buffer, length);
-        file.close();
-    } else {
-        printf("Unable to open file: %s", filename);
+char *loadBin(const char *filename, long offset, long length, int stride) {
+    ifstream input(filename, ios::binary);
+    vector<char> buffer((istreambuf_iterator<char>(input)), (istreambuf_iterator<char>()));
+    return buffer.data();
+}
+
+void printBin(char *bin, size_t size) {
+    printf("Bin:\n");
+    for (int i = 0; i < size; ++i) {
+        char n = bin[i];
+        while (n) {
+            if (n & 1) printf("1");
+            else printf("0");
+            n >>= 1;
+        }
     }
-    return buffer;
+    printf("\n");
 }
 
 int main() {
 //    GLTF *gltf;
 //    load_gltf_file(&gltf, "cube.gltf");
-    loadBintary("cube.bin", 1000, 5000);
+//    GLTF_BufferView bufferView = gltf->bufferViews[0];
+//    printf("Offset: %ld, Length: %ld, Stride: %d\n", bufferView.byteOffset, bufferView.byteLength, bufferView.byteStride);
+//    char *bin = loadBin("cube.bin", bufferView.byteOffset, bufferView.byteLength, bufferView.byteStride);
+//    printBin(bin, 100);
+    bool isTrue = 'a' & 1;
+    printf("%d", isTrue);
     return 0;
 }
